@@ -1,0 +1,44 @@
+{
+  "name": "stepfun-status",
+  "version": "1.0.3",
+  "description": "StepFun Token-Plan 使用状态监控工具，支持 Claude Code 状态栏集成",
+  "main": "cli/index.js",
+  "bin": {
+    "stepfun-status": "cli/index.js",
+    "stepfun": "cli/index.js"
+  },
+  "scripts": {
+    "test": "node cli/index.js health",
+    "start": "node cli/index.js status",
+    "lint": "node --check cli/api.js cli/index.js"
+  },
+  "keywords": [
+    "stepfun",
+    "step",
+    "claude",
+    "claude-code",
+    "status",
+    "monitor",
+    "token-plan"
+  ],
+  "author": "Daiyimo",
+  "license": "MIT",
+  "homepage": "https://github.com/Daiyimo/stepfun-status",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Daiyimo/stepfun-status.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Daiyimo/stepfun-status/issues"
+  },
+  "readme": "README.md",
+  "dependencies": {
+    "boxen": "^8.0.1",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.2",
+    "ora": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
