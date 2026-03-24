@@ -3,6 +3,7 @@
 > StepFun Token-Plan 使用状态监控工具，支持 Claude Code 状态栏常驻显示。
 
 [![npm version](https://img.shields.io/npm/v/stepfun-status)](https://www.npmjs.com/package/stepfun-status)
+[![npm downloads](https://img.shields.io/npm/dm/stepfun-status)](https://www.npmjs.com/package/stepfun-status?activeTab=downloads)
 [![Node >=16](https://img.shields.io/node/v/stepfun-status)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
