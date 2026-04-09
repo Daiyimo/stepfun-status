@@ -71,6 +71,53 @@ function calcRemainingText(resetInfo) {
     : `${minutesUntil} 分钟后重置`;
 }
 
+// ─── Cookie 合并工具函数 ──────────────────────────────────────────────────────
+
+/**
+ * 将 Set-Cookie 响应头合并到现有 Cookie 字符串中（模拟浏览器行为）。
+ * 新值覆盖同名旧值，从而自动延长会话有效期。
+ *
+ * @param {string} existingCookie  当前 Cookie 字符串（"k1=v1; k2=v2" 格式）
+ * @param {string[]} setCookieHeaders  响应头中的 Set-Cookie 数组
+ * @returns {string} 合并后的 Cookie 字符串
+ */
+function mergeCookies(existingCookie, setCookieHeaders) {
+  // 1. 解析现有 cookie 为 Map（保持插入顺序）
+  const cookieMap = new Map();
+  if (existingCookie) {
+    existingCookie.split(/;\s*/).forEach((c) => {
+      const idx = c.indexOf("=");
+      if (idx === -1) return;
+      const key = c.slice(0, idx).trim();
+      if (key) cookieMap.set(key, c.slice(idx + 1));
+    });
+  }
+
+  // 2. 从 Set-Cookie 头中提取 name=value（忽略 Path/Domain/Expires 等属性）
+  let updated = false;
+  for (const header of setCookieHeaders) {
+    // Set-Cookie 格式: "name=value; Path=/; Domain=...; Expires=..."
+    const firstPart = header.split(";")[0].trim();
+    const idx = firstPart.indexOf("=");
+    if (idx === -1) continue;
+    const key = firstPart.slice(0, idx).trim();
+    const val = firstPart.slice(idx + 1);
+    if (!key) continue;
+    const oldVal = cookieMap.get(key);
+    if (oldVal !== val) {
+      cookieMap.set(key, val);
+      updated = true;
+    }
+  }
+
+  if (!updated) return existingCookie;
+
+  // 3. 重新拼接
+  return Array.from(cookieMap.entries())
+    .map(([k, v]) => `${k}=${v}`)
+    .join("; ");
+}
+
 // ─── StepFunAPI 类 ────────────────────────────────────────────────────────────
 
 class StepFunAPI {
@@ -181,6 +228,16 @@ class StepFunAPI {
           let body = "";
           res.on("data", (chunk) => { body += chunk; });
           res.on("end", () => {
+            // 自动捕获 Set-Cookie 响应头，合并更新本地 Cookie（模拟浏览器保活）
+            const setCookieHeaders = res.headers["set-cookie"];
+            if (setCookieHeaders && setCookieHeaders.length > 0 && this.cookie) {
+              const merged = mergeCookies(this.cookie, setCookieHeaders);
+              if (merged !== this.cookie) {
+                this.cookie = merged;
+                this.saveConfig();
+              }
+            }
+
             if (res.statusCode === 200) {
               try {
                 resolve(JSON.parse(body));
@@ -188,7 +245,13 @@ class StepFunAPI {
                 reject(new Error("Failed to parse response: invalid JSON"));
               }
             } else if (res.statusCode === 401) {
-              reject(new Error("Cookie 已失效或过期，请重新运行 auth 命令"));
+              this.clearCache();
+              reject(
+                new Error(
+                  "Cookie 已失效或过期，请重新运行 auth 命令\n" +
+                    "获取方式: 登录 https://platform.stepfun.com/plan-subscribe → F12 → Network → 复制 Cookie"
+                )
+              );
             } else {
               reject(new Error(`API error: HTTP ${res.statusCode}`));
             }

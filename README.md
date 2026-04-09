@@ -121,6 +121,21 @@ stepfun status
 | `stepfun statusline` | — | 输出状态行（供 Claude Code 调用） |
 | `stepfun statusline` | `-w, --watch` | 持续刷新状态行输出 |
 
+## 卸载 / 更新
+
+```bash
+# 一键更新到最新版
+npm update -g stepfun-status
+
+# 完全卸载
+npm uninstall -g stepfun-status
+# 可选：同时删除配置文件
+# macOS / Linux
+rm -f ~/.stepfun-config.json
+# Windows (PowerShell)
+Remove-Item ~\.stepfun-config.json -ErrorAction SilentlyContinue
+```
+
 ## 配置文件
 
 | 项目 | 说明 |
